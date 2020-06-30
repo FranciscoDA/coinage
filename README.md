@@ -1,4 +1,5 @@
 # Coinage
+![Travis](https://travis-ci.org/FranciscoDA/coinage.svg?branch=master)
 
 Coinage is a python module for validating cryptocurrency addresses with different formats among different blockchain networks.
 
