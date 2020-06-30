@@ -46,7 +46,7 @@ class BitcoinBlockchain(BlockchainNetwork):
         return net_name == self.MAIN_NET
 
     def validators(self):
-        return [Bech32Validator(), Base58CheckValidator()]
+        return [Bech32Validator(self), Base58CheckValidator(self)]
 
 
 class BitcoinCashBlockchain(BitcoinBlockchain):
@@ -60,7 +60,7 @@ class BitcoinCashBlockchain(BitcoinBlockchain):
         }.get(hrp, self.UNKNOWN_NET)
 
     def validators(self):
-        return [CashAddrValidator(), Base58CheckValidator()]
+        return [CashAddrValidator(self), Base58CheckValidator(self)]
 
 
 class EthereumBlockchain():
@@ -73,4 +73,4 @@ class EthereumBlockchain():
         return net_name == self.ALL_NETS
 
     def validators(self):
-        return [Sha3Validator()]
+        return [Sha3Validator(self)]

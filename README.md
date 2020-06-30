@@ -8,11 +8,11 @@ Coinage is a python module for validating cryptocurrency addresses with differen
 ```py
 from coinage import BitcoinBlockchain, FailedValidation, FailedChecksumValidation
 
-btc = BicoinBlockchain()
+btc = BitcoinBlockchain()
 
 try:
 	valid = btc.validate('abcdef1qpzry9x8gf2tvdw0s3jn54khce6mua7lmqqqxw')
-	if valid.is_from_main_net(btc):
+	if valid.is_from_main_net():
 		print('this address looks good')
 	else:
 		print('this isn\'t a mainnet address')
