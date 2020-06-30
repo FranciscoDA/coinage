@@ -1,0 +1,10 @@
+language: python
+python:
+ - "3.7"
+ - "3.8"
+before_install:
+ - pip3 install -r requirements.txt
+install:
+ - pip3 install .
+script:
+ - python3 -m unittest tests
