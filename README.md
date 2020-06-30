@@ -5,7 +5,7 @@ Coinage is a python module for validating cryptocurrency addresses with differen
 
 # Example
 
-```
+```py
 from coinage import BitcoinBlockchain, FailedValidation, FailedChecksumValidation
 
 btc = BicoinBlockchain()
@@ -25,7 +25,11 @@ except FailedChecksumValidation:
 
 # Sources
 [Bitcoin wiki page about Bech32](https://en.bitcoin.it/wiki/Bech32)
+
 [BIP-0173](https://en.bitcoin.it/wiki/BIP_0173)
+
 [EIP-55](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-55.md)
+
 [CashAddr Spec](https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/cashaddr.md)
+
 [Coinaddr Python Module](https://pypi.org/project/coinaddr/)
