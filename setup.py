@@ -4,7 +4,7 @@ with open('README.md', 'r') as f:
     long_description = f.read()
 
 setuptools.setup(
-    name='coinage',
+    name='python-coinage',
     version='1.0.0',
     author='Francisco Altoe',
     author_email='franciscoda@outlook.com',
