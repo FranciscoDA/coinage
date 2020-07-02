@@ -13,7 +13,7 @@ from coinage.validators.sha3 import Sha3Validator
 from coinage.validators.base58check import Base58CheckValidator
 
 
-class ValidatorTestCase(TestCase):
+class ValidatorTestBase():
     """
     Mother of all validator test cases
     """
@@ -42,56 +42,50 @@ class ValidatorTestCase(TestCase):
             tuple()
         ]
 
-    def test_valid_vectors_with_checksum(self):
-        if type(self) == ValidatorTestCase:
-            return
-        if not (self.valid_vectors_with_checksum() + self.valid_vectors_without_checksum()):
-            self.fail(
-                'Must override atleast one of '
-                'valid_vectors_with_checksum or valid_vectors_without_checksum'
-            )
+    def test_this_test_case_is_valid(self):
+        """
+        This is a sanity check to make sure all inheriting classes provide at least one valid
+        and one invalid test vector.
+        """
+        self.assertGreater(len(self.valid_vectors_with_checksum()) + len(self.valid_vectors_without_checksum()), 0)
+        self.assertGreater(len(self.invalid_vectors()) + len(self.checksum_mismatch_vectors()), 0)
 
-        validator = self.validator()
+    def test_valid_vectors_with_checksum(self):
         for address in self.valid_vectors_with_checksum():
+            validator = self.validator()
             with self.subTest(vector=address):
                 result = validator.validate(address)
                 self.assertIsInstance(result, ValidationResult)
                 self.assertTrue(result.has_checksum())
 
+    def test_valid_vectors_without_checksum(self):
         for address in self.valid_vectors_without_checksum():
+            validator = self.validator()
             with self.subTest(vector=address):
                 result = validator.validate(address)
                 self.assertIsInstance(result, ValidationResult)
                 self.assertFalse(result.has_checksum())
 
     def test_invalid_vectors(self):
-        if type(self) == ValidatorTestCase:
-            return
-        if not (self.invalid_vectors() + self.checksum_mismatch_vectors()):
-            self.fail(
-                'Must override atleast one of '
-                'invalid_vectors or checksum_mismatch_vectors'
-            )
-
-        validator = self.validator()
         for address in self.invalid_vectors() + self.invalid_addresses():
+            validator = self.validator()
             with self.subTest(vector=address):
                 with self.assertRaises(FailedValidation) as raised:
                     validator.validate(address)
+                self.assertIsInstance(raised.exception, FailedValidation)
+                # An invalid vector was detectedas a checksum mismatch.
+                # Either ix the validator or classify the vector properly
+                self.assertFalse(isinstance(raised.exception, FailedChecksumValidation))
 
-                if isinstance(raised.exception, FailedChecksumValidation):
-                    self.fail(
-                        'An invalid vector was detected as a checksum mismatch.'
-                        ' Either fix the validator or classify the vector properly'
-                    )
-
+    def test_checksum_mismatch_vectors(self):
         for address in self.checksum_mismatch_vectors():
+            validator = self.validator()
             with self.subTest(vector=address):
                 with self.assertRaises(FailedChecksumValidation):
                     validator.validate(address)
 
 
-class Bech32ValidatorTestCase(ValidatorTestCase):
+class Bech32ValidatorTestCase(ValidatorTestBase, TestCase):
     def validator(self):
         return Bech32Validator(BitcoinBlockchain())
 
@@ -117,7 +111,6 @@ class Bech32ValidatorTestCase(ValidatorTestCase):
             'x1b4n0q5v',  # Invalid data character
             'li1dgmt3',  # Too short checksum
             'de1lg7wt\xFF',  # Invalid character in checksum
-
             '10a06t8',  # empty HRP
             '1qzzfhee',  # empty HRP
         ]
@@ -128,7 +121,7 @@ class Bech32ValidatorTestCase(ValidatorTestCase):
         ]
 
 
-class Sha3ValidatorTestCase(ValidatorTestCase):
+class Sha3ValidatorTestCase(ValidatorTestBase, TestCase):
     def validator(self):
         return Sha3Validator(EthereumBlockchain())
 
@@ -160,7 +153,7 @@ class Sha3ValidatorTestCase(ValidatorTestCase):
         ]
 
 
-class Base58CheckValidatorTestCase(ValidatorTestCase):
+class Base58CheckValidatorTestCase(ValidatorTestBase, TestCase):
     def validator(self):
         return Base58CheckValidator(BitcoinBlockchain())
 
@@ -199,4 +192,42 @@ class Base58CheckValidatorTestCase(ValidatorTestCase):
             'XC5bSj1iEGUgSTbziymG7Cn18ENQuT36vv',
         ]
 
+
+# Test the blockchain .validate() method to make sure it works.
+# We dont need to be as exhaustive regarding valid/invalid vectors
+# since we have already tested them above.
+
+
+class BitcoinBlockchainTestCase(TestCase):
+    def test_base58check_validate_success(self):
+        btc = BitcoinBlockchain()
+        result = btc.validate('1MmErJTQpfs5dHC1bTLpGqFM34MqXCaC5r')
+        self.assertIsInstance(result, ValidationResult)
+        self.assertTrue(result.has_checksum())
+
+    def test_bech32_validate_success(self):
+        btc = BitcoinBlockchain()
+        result = btc.validate('an83characterlonghumanreadablepartthatcontainsthenumber1andtheexcludedcharactersbio1tt5tgs')
+        self.assertIsInstance(result, ValidationResult)
+        self.assertTrue(result.has_checksum())
+
+    def test_is_valid_success(self):
+        btc = BitcoinBlockchain()
+        result, details = btc.is_valid('1MmErJTQpfs5dHC1bTLpGqFM34MqXCaC5r')
+        self.assertTrue(result)
+        self.assertIsInstance(details, ValidationResult)
+        
+
+class EthereumBlockchainTestCase(TestCase):
+    def test_sha3_validation(self):
+        eth = EthereumBlockchain()
+        result = eth.validate('0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed')
+        self.assertIsInstance(result, ValidationResult)
+        self.assertTrue(result.has_checksum())
+
+    def test_is_valid_success(self):
+        eth = EthereumBlockchain()
+        result, details = eth.is_valid('0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed')
+        self.assertTrue(result)
+        self.assertIsInstance(details, ValidationResult)
 

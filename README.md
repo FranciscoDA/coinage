@@ -3,7 +3,7 @@
 
 Coinage is a python module for validating cryptocurrency addresses with different formats among different blockchain networks.
 
-# Example
+# Examples
 
 ```py
 from coinage import BitcoinBlockchain, FailedValidation, FailedChecksumValidation
@@ -16,11 +16,27 @@ try:
 		print('this address looks good')
 	else:
 		print('this isn\'t a mainnet address')
-except FailedValidation:
-	print('this isnt a bitcoin address')
 except FailedChecksumValidation:
 	print('you probably made a mistake when copying this address')
+except FailedValidation:
+	print('this isnt a bitcoin address')
+```
 
+Or:
+
+```py
+from coinage import BitcoinBlockchain, FailedValidation, FailedChecksumValidation
+
+btc = BitcoinBlockchain()
+
+result, details = btc.is_valid('abcdef1qpzry9x8gf2tvdw0s3jn54khce6mua7lmqqqxw')
+if result:
+	if details.is_from_main_net():
+		print('this address looks good')
+	else:
+		print('this isn\'t a mainnet address')
+else:
+	print('this isnt a valid bitcoin address')
 ```
 
 # Sources

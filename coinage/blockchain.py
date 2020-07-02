@@ -2,6 +2,7 @@ from coinage.validators.bech32 import Bech32Validator
 from coinage.validators.base58check import Base58CheckValidator
 from coinage.validators.sha3 import Sha3Validator
 from coinage.validators.cashaddr import CashAddrValidator
+from coinage.validators.address_validator import FailedChecksumValidation, FailedValidation
 
 
 class BlockchainNetwork:
@@ -14,10 +15,28 @@ class BlockchainNetwork:
             try:
                 return validator.validate(address)
             except FailedChecksumValidation:
+                # it appears this is the correct parser
+                # however, the checksum validation failed
                 raise
             except FailedValidation as error:
                 last_error = error
         raise last_error
+
+    def is_valid(self, address):
+        """
+        This is a convenience method that's virtually equivalent to validate(),
+        except that it doesn't raise exceptions.
+        The return value is a tuple (result, details), where the result is a 
+        boolean indicating whether the validation was successful and the details
+        can be a ValidationResult or a FailedValidation exception.
+        """
+        try:
+            result = True
+            details = self.validate(address)
+        except FailedValidation as error:
+            result = False
+            details = error
+        return result, details
 
     def is_main_net(self, net_name):
         return False
@@ -63,7 +82,7 @@ class BitcoinCashBlockchain(BitcoinBlockchain):
         return [CashAddrValidator(self), Base58CheckValidator(self)]
 
 
-class EthereumBlockchain():
+class EthereumBlockchain(BlockchainNetwork):
     ALL_NETS = 'all'
 
     def net_name(self, **kwargs):
