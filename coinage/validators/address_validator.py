@@ -55,4 +55,3 @@ class AddressValidator:
 
     def _checksum_fail(self, address):
         raise FailedChecksumValidation(self, address)
-

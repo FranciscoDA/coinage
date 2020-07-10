@@ -71,13 +71,16 @@ class Bech32Validator(AddressValidator):
     def _get_parts(self, address):
         return address.rsplit('1', 1)  # we use rsplit because '1' might appear in the human readable part
 
+    def _validate_length(self, address):
+        # A Bech32 string is at most 90 characters long
+        if len(address) > 90:
+            self._fail(address, 'Address too long (must be at most 90 characters)')
+
     def validate(self, address):
         if not isinstance(address, str):
             self._fail(address, 'Address must be a string')
 
-        # A Bech32 string is at most 90 characters long
-        if len(address) > 90:
-            self._fail(address, 'Address too long (must be at most 90 characters)')
+        self._validate_length(address)
 
         # Decoders MUST NOT accept strings where some characters are uppercase and some are lowercase
         if is_mixed_case(address):
