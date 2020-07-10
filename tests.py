@@ -45,8 +45,7 @@ class ValidatorTestBase():
 
     def test_this_test_case_is_valid(self):
         """
-        This is a sanity check to make sure all inheriting classes provide at least one valid
-        and one invalid test vector.
+        Make sure all inheriting classes provide at least one valid and one invalid test vector.
         """
         self.assertGreater(len(self.valid_vectors_with_checksum()) + len(self.valid_vectors_without_checksum()), 0)
         self.assertGreater(len(self.invalid_vectors()) + len(self.checksum_mismatch_vectors()), 0)
@@ -73,7 +72,7 @@ class ValidatorTestBase():
             with self.subTest(vector=address):
                 with self.assertRaises(FailedValidation) as raised:
                     validator.validate(address)
-                self.assertIsInstance(raised.exception, FailedValidation)
+                self.assertGreater(len(raised.exception.get_errors()), 0)
                 # An invalid vector was detected as a checksum mismatch.
                 # Either fix the validator or classify the vector properly
                 self.assertFalse(isinstance(raised.exception, FailedChecksumValidation))
@@ -82,8 +81,9 @@ class ValidatorTestBase():
         for address in self.checksum_mismatch_vectors():
             validator = self.validator()
             with self.subTest(vector=address):
-                with self.assertRaises(FailedChecksumValidation):
+                with self.assertRaises(FailedChecksumValidation) as raised:
                     validator.validate(address)
+                self.assertEqual(len(raised.exception.get_errors()), 1)
 
 
 class Bech32ValidatorTestCase(ValidatorTestBase, TestCase):
@@ -256,13 +256,13 @@ class CashAddrValidatorTestCase(ValidatorTestBase, TestCase):
 
 
 class BitcoinBlockchainTestCase(TestCase):
-    def test_base58check_validate_success(self):
+    def test_base58check_validation(self):
         btc = BitcoinBlockchain()
         result = btc.validate('1MmErJTQpfs5dHC1bTLpGqFM34MqXCaC5r')
         self.assertIsInstance(result, ValidationResult)
         self.assertTrue(result.has_checksum())
 
-    def test_bech32_validate_success(self):
+    def test_bech32_validation(self):
         btc = BitcoinBlockchain()
         result = btc.validate('an83characterlonghumanreadablepartthatcontainsthenumber1andtheexcludedcharactersbio1tt5tgs')
         self.assertIsInstance(result, ValidationResult)
@@ -273,6 +273,24 @@ class BitcoinBlockchainTestCase(TestCase):
         result, details = btc.is_valid('1MmErJTQpfs5dHC1bTLpGqFM34MqXCaC5r')
         self.assertTrue(result)
         self.assertIsInstance(details, ValidationResult)
+
+    def test_is_valid_failure(self):
+        btc = BitcoinBlockchain()
+        result, details = btc.is_valid('lorem ipsum')
+        self.assertFalse(result)
+        self.assertIsInstance(details, FailedValidation)
+
+    def test_bech32_address_from_main_net(self):
+        btc = BitcoinBlockchain()
+        result = btc.validate('bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4')
+        self.assertEqual(result.network_name(), BitcoinBlockchain.MAIN_NET)
+        self.assertTrue(result.is_from_main_net())
+
+    def test_bech32_address_from_test_net(self):
+        btc = BitcoinBlockchain()
+        result = btc.validate('tb1qw508d6qejxtdg4y5r3zarvary0c5xw7kxpjzsx')
+        self.assertEqual(result.network_name(), BitcoinBlockchain.TEST_NET)
+        self.assertFalse(result.is_from_main_net())
 
 
 class EthereumBlockchainTestCase(TestCase):
@@ -288,3 +306,46 @@ class EthereumBlockchainTestCase(TestCase):
         self.assertTrue(result)
         self.assertIsInstance(details, ValidationResult)
 
+    def test_is_valid_failure(self):
+        eth = EthereumBlockchain()
+        result, details = eth.is_valid('lorem ipsum')
+        self.assertFalse(result)
+        self.assertIsInstance(details, FailedValidation)
+
+    def test_is_valid_checksum_error(self):
+        eth = EthereumBlockchain()
+        result, details = eth.is_valid('0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaeD')
+        self.assertFalse(result)
+        self.assertIsInstance(details, FailedChecksumValidation)
+
+    def test_address_from_any_net(self):
+        eth = EthereumBlockchain()
+        result = eth.validate('0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed')
+        self.assertEqual(result.network_name(), EthereumBlockchain.ALL_NETS)
+        self.assertTrue(result.is_from_main_net())
+
+
+class BitcoinCashBlockchainTestCase(TestCase):
+    def test_cashaddr_validation(self):
+        bch = BitcoinCashBlockchain()
+        result = bch.validate('bitcoincash:qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a')
+        self.assertIsInstance(result, ValidationResult)
+        self.assertTrue(result.has_checksum())
+
+    def test_is_valid_success(self):
+        bch = BitcoinCashBlockchain()
+        result, details = bch.is_valid('bitcoincash:qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a')
+        self.assertTrue(result)
+        self.assertIsInstance(details, ValidationResult)
+
+    def test_address_from_mainnet(self):
+        bch = BitcoinCashBlockchain()
+        result = bch.validate('bitcoincash:qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a')
+        self.assertEqual(result.network_name(), BitcoinCashBlockchain.MAIN_NET)
+        self.assertTrue(result.is_from_main_net())
+
+    def test_is_valid_failure(self):
+        bch = BitcoinCashBlockchain()
+        result, details = bch.is_valid('lorem ipsum')
+        self.assertFalse(result)
+        self.assertIsInstance(details, FailedValidation)

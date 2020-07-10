@@ -19,7 +19,7 @@ class Bech32ValidationResult(ValidationResult):
         self._human_readable_part = human_readable_part
 
     def network_name(self):
-        self._validator.blockchain().net_name_from_human_readable_part(self._human_readable_part)
+        return self._validator.blockchain().net_name_from_human_readable_part(self._human_readable_part)
 
 
 class Bech32Validator(AddressValidator):
@@ -114,4 +114,3 @@ class Bech32Validator(AddressValidator):
             self._checksum_fail(address)
 
         return Bech32ValidationResult(self, address, human_readable_part)
-

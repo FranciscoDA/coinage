@@ -1,5 +1,4 @@
 import sha3
-import re
 from string import hexdigits
 
 from coinage.validators.address_validator import AddressValidator, ValidationResult
@@ -8,7 +7,7 @@ from coinage.util import is_mixed_case
 
 class Sha3ValidationResult(ValidationResult):
     def network_name(self):
-        return self._validator.blockchain().ALL_NETS
+        return self._validator.blockchain().net_name()
 
 
 class Sha3Validator(AddressValidator):

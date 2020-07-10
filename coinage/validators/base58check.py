@@ -12,7 +12,9 @@ class Base58CheckValidationResult(ValidationResult):
     def network_name(self):
         self._validator.blockchain().net_name_from_version_bytes(self._version_bytes)
 
+
 default_alphabet = frozenset(base58check.DEFAULT_CHARSET.decode('ascii'))
+
 
 class Base58CheckValidator(AddressValidator):
     """Validates Base58Check based cryptocurrency addresses."""
@@ -37,4 +39,3 @@ class Base58CheckValidator(AddressValidator):
             self._checksum_fail(address)
 
         return Base58CheckValidationResult(self, address, abytes[0])
-

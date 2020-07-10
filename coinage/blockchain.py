@@ -7,7 +7,7 @@ from coinage.validators.address_validator import FailedChecksumValidation, Faile
 
 class BlockchainNetwork:
     def validators(self):
-        return []
+        raise NotImplementedError
 
     def validate(self, address):
         last_error = Exception(f'There are no validators for {self}')
@@ -26,7 +26,7 @@ class BlockchainNetwork:
         """
         This is a convenience method that's virtually equivalent to validate(),
         except that it doesn't raise exceptions.
-        The return value is a tuple (result, details), where the result is a 
+        The return value is a tuple (result, details), where the result is a
         boolean indicating whether the validation was successful and the details
         can be a ValidationResult or a FailedValidation exception.
         """
@@ -39,14 +39,14 @@ class BlockchainNetwork:
         return result, details
 
     def is_main_net(self, net_name):
-        return False
+        raise NotImplementedError
 
 
 class BitcoinBlockchain(BlockchainNetwork):
     MAIN_NET = 'main'
     TEST_NET = 'test'
     UNKNOWN_NET = 'unknown'
-    
+
     def net_name_from_human_readable_part(self, hrp):
         return {
             'bc': self.MAIN_NET,

@@ -12,7 +12,7 @@ class ValidationResult:
         raise NotImplementedError
 
     def is_from_main_net(self):
-        self._validator.blockchain().is_main_net(self.network_name())
+        return self._validator.blockchain().is_main_net(self.network_name())
 
     def __str__(self):
         result = f'{self.address} is a valid {self.validator.name} address'
