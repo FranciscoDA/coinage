@@ -3,6 +3,45 @@
 
 Coinage is a python module for validating cryptocurrency addresses with different formats among different blockchain networks.
 
+# Installation
+
+Coinage may be installed either from PyPi:
+
+`pip install python-coinage`
+
+Or directly from this repository:
+
+`pip install git+https://github.com/franciscoda/coinage.git`
+
+# Description
+
+Coinage validates cryptocurrency addresses passed as strings.
+The first step to validate such string is to find out to which `BlockchainNetwork`
+that cryptocurrency belongs to.
+Coinage doesn't provide a mapping from currencies to its
+corresponding `BlockchainNetwork` objects since some blockchain networks like Ethereum
+allow an arbitrary number of cryptocurrencies to run on top of them.
+
+
+However, Coinage provides some `BlockchainNetwork` objects along with their
+address format validators. The included implementations are listed below:
+
+| BlockchainNetwork     | Address formats       | Net differentation              |
+|-----------------------|-----------------------|---------------------------------|
+| BitcoinBlockchain     | Base58Check, Bech32   | MAIN_NET, TEST_NET              |
+| BitcoinCashBlockchain | Base58Check, CashAddr | MAIN_NET, TEST_NET, REGTEST_NET |
+| EthereumBlockchain    | SHA-3                 | *Not possible*                  |
+
+
+The result from validating an address is a `ValidationResult` object instance.
+Along with the `BlockchainNetwork` it belongs to, it can answer to what net
+it belongs to.
+
+The default `validate()` method will raise a `FailedValidation` or `FailedChecksumValidation`
+error where appropiate. Some address formats may have an implicit or explicit checksum which
+is invalid for the given payload. If a checksum mismatch were to occur, a `FailedChecksumValidation`
+will be raised.
+
 # Examples
 
 ```py
@@ -22,7 +61,9 @@ except FailedValidation:
 	print('this isnt a bitcoin address')
 ```
 
-Or:
+Since some developers prefer a validation function that doesn't raise exceptions,
+`BlockchainNetwork` objects also provide an `is_valid()` method that can be
+used as follows:
 
 ```py
 from coinage import BitcoinBlockchain, FailedValidation, FailedChecksumValidation
@@ -30,6 +71,7 @@ from coinage import BitcoinBlockchain, FailedValidation, FailedChecksumValidatio
 btc = BitcoinBlockchain()
 
 result, details = btc.is_valid('abcdef1qpzry9x8gf2tvdw0s3jn54khce6mua7lmqqqxw')
+
 if result:
 	if details.is_from_main_net():
 		print('this address looks good')
