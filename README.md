@@ -1,5 +1,6 @@
 # Coinage
 ![Travis](https://travis-ci.org/FranciscoDA/coinage.svg?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/FranciscoDA/coinage/badge.svg?branch=master)](https://coveralls.io/github/FranciscoDA/coinage?branch=master)
 
 Coinage is a python module for validating cryptocurrency addresses with different formats among different blockchain networks.
 

@@ -4,7 +4,10 @@ python:
  - "3.8"
 before_install:
  - pip3 install -r requirements.txt
+ - pip3 install coverage coveralls
 install:
  - pip3 install .
 script:
- - python3 -m unittest tests
+ - coverage run --source=coinage -m unittest tests
+after_success:
+  coveralls
